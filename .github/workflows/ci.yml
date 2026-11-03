@@ -8,7 +8,8 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel superseded PR runs, but never cancel a run on main (releases depend on it).
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -85,7 +86,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: pip install openpyxl
+      - run: pip install -r scripts/requirements-fixtures.txt
       - run: python3 scripts/make-fixtures.py
       - name: fail when committed fixtures drift from the generator
         run: |

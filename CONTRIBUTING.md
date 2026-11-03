@@ -35,7 +35,7 @@ Optional, only if you touch third-party fixtures:
 
 ```bash
 python3 -m venv /tmp/venv-openpyxl
-/tmp/venv-openpyxl/bin/pip install openpyxl
+/tmp/venv-openpyxl/bin/pip install -r scripts/requirements-fixtures.txt
 /tmp/venv-openpyxl/bin/python scripts/make-fixtures.py
 ```
 

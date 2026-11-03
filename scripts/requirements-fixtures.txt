@@ -1,0 +1,4 @@
+# Pinned: fixture bytes are part of the repository contract. A different openpyxl
+# version writes different (equally valid) XML, which would make the CI drift check
+# fail for no real reason.
+openpyxl==3.1.5
