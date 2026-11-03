@@ -18,7 +18,9 @@ Requires: pip install openpyxl
 from __future__ import annotations
 
 import datetime as dt
+import re
 import zipfile
+import argparse
 from pathlib import Path
 
 from openpyxl import Workbook
@@ -30,7 +32,6 @@ from openpyxl.utils.datetime import CALENDAR_MAC_1904
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / "fixtures"
-FIXTURES.mkdir(exist_ok=True)
 
 # Fixed timestamps so the checked-in fixtures are byte-for-byte reproducible; CI fails
 # when `python3 scripts/make-fixtures.py` changes anything under fixtures/.
@@ -46,9 +47,22 @@ def _fix_properties(workbook: Workbook) -> None:
 
 
 def _normalize_zip(path: Path) -> None:
-    """Rewrite a workbook with sorted entries and fixed timestamps."""
+    """Rewrite a workbook with sorted entries, fixed zip timestamps and a fixed
+    `dcterms:modified` value (openpyxl stamps "now" into core.xml whatever you set)."""
     with zipfile.ZipFile(path) as source:
         entries = [(info.filename, source.read(info.filename)) for info in source.infolist()]
+    fixed = []
+    for name, payload in entries:
+        if name == "docProps/core.xml":
+            text = payload.decode("utf-8")
+            text = re.sub(
+                r"(<dcterms:modified[^>]*>)[^<]*(</dcterms:modified>)",
+                r"\g<1>2024-01-01T00:00:00Z\g<2>",
+                text,
+            )
+            payload = text.encode("utf-8")
+        fixed.append((name, payload))
+    entries = fixed
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as target:
         for name, payload in sorted(entries):
             info = zipfile.ZipInfo(name, FIXED_TIME)
@@ -335,7 +349,13 @@ def handmade() -> None:
             archive.writestr(info, body.encode("utf-8"))
 
 
-if __name__ == "__main__":
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, default=ROOT / "fixtures", help="output directory")
+    global FIXTURES
+    FIXTURES = parser.parse_args().out
+    FIXTURES.mkdir(parents=True, exist_ok=True)
+
     mixed()
     formats()
     mac_dates()
@@ -349,3 +369,7 @@ if __name__ == "__main__":
         _normalize_zip(path)
     for path in sorted(FIXTURES.glob("*.xlsx")):
         print(f"{path.name}: {path.stat().st_size} bytes")
+
+
+if __name__ == "__main__":
+    main()

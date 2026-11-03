@@ -87,11 +87,6 @@ jobs:
         with:
           node-version: 22
       - run: pip install -r scripts/requirements-fixtures.txt
-      - run: python3 scripts/make-fixtures.py
-      - name: fail when committed fixtures drift from the generator
-        run: |
-          if ! git diff --quiet -- fixtures; then
-            echo "fixtures/ is stale compared to scripts/make-fixtures.py:"
-            git diff --stat -- fixtures
-            exit 1
-          fi
+      - run: python3 scripts/make-fixtures.py --out /tmp/regenerated-fixtures
+      - name: committed fixtures must match what the generator produces
+        run: node scripts/check-fixtures.mjs fixtures /tmp/regenerated-fixtures
