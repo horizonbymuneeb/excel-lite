@@ -174,14 +174,26 @@ class StyleBook {
 // sheet writer
 // ---------------------------------------------------------------------------
 
-function shareString(text: string, index: Map<string, number>, list: string[]): number {
-  const value = text.length > MAX_STRING ? text.slice(0, MAX_STRING) : text;
-  const existing = index.get(value);
-  if (existing !== undefined) return existing;
-  const position = list.length;
-  list.push(value);
-  index.set(value, position);
-  return position;
+/**
+ * Shared string table. `count` is the total number of references and
+ * `uniqueCount` the number of distinct strings — Excel is strict about the
+ * difference, even though most parsers ignore it.
+ */
+class SharedStrings {
+  private readonly byValue = new Map<string, number>();
+  readonly values: string[] = [];
+  references = 0;
+
+  add(text: string): number {
+    this.references++;
+    const value = text.length > MAX_STRING ? text.slice(0, MAX_STRING) : text;
+    const existing = this.byValue.get(value);
+    if (existing !== undefined) return existing;
+    const position = this.values.length;
+    this.values.push(value);
+    this.byValue.set(value, position);
+    return position;
+  }
 }
 
 function displayWidth(value: CellValue): number {
@@ -217,8 +229,7 @@ function cellXml(
   columnStyleId: number,
   column: ColumnSpec | undefined,
   styles: StyleBook,
-  sharedIndex: Map<string, number>,
-  sharedStrings: string[],
+  shared: SharedStrings,
 ): string {
   if (value === null || value === undefined) return '';
 
@@ -243,7 +254,7 @@ function cellXml(
 
   if (typeof value === 'number') {
     if (!Number.isFinite(value)) {
-      const index = shareString(String(value), sharedIndex, sharedStrings);
+      const index = shared.add(String(value));
       return `<c r="${ref}"${styleAttr} t="s"><v>${index}</v></c>`;
     }
     return `<c r="${ref}"${styleAttr}><v>${value}</v></c>`;
@@ -255,15 +266,14 @@ function cellXml(
 
   const text = String(value);
   if (text === '') return '';
-  const index = shareString(text, sharedIndex, sharedStrings);
+  const index = shared.add(text);
   return `<c r="${ref}"${styleAttr} t="s"><v>${index}</v></c>`;
 }
 
 function buildSheetXml(
   sheet: SheetInput,
   styles: StyleBook,
-  sharedIndex: Map<string, number>,
-  sharedStrings: string[],
+  shared: SharedStrings,
 ): string {
   const columns: ColumnSpec[] = sheet.columns ? [...sheet.columns] : [];
   const body: Array<Array<CellValue | undefined>> = [];
@@ -295,7 +305,7 @@ function buildSheetXml(
       widths[index] = Math.max(widths[index], displayWidth(header));
       const styleId = styles.xfId({ bold: true });
       cells.push(
-        cellXml(header, `${columnLetter(index)}1`, styleId, { ...column, bold: false }, styles, sharedIndex, sharedStrings),
+        cellXml(header, `${columnLetter(index)}1`, styleId, { ...column, bold: false }, styles, shared),
       );
     });
     lines.push(`<row r="1">${cells.join('')}</row>`);
@@ -318,7 +328,7 @@ function buildSheetXml(
           })
         : 0;
       const ref = `${columnLetter(index)}${rowNumber}`;
-      const xml = cellXml(value, ref, styleId, column, styles, sharedIndex, sharedStrings);
+      const xml = cellXml(value, ref, styleId, column, styles, shared);
       if (xml) cells.push(xml);
       if (column?.width === undefined) widths[index] = Math.max(widths[index], displayWidth(value));
     }
@@ -438,11 +448,11 @@ function workbookRelsXml(sheetCount: number): string {
   )}</Relationships>`;
 }
 
-function sharedStringsXml(strings: string[]): string {
-  const items = strings.map((text) => `<si><t xml:space="preserve">${escapeXml(text)}</t></si>`).join('');
+function sharedStringsXml(shared: SharedStrings): string {
+  const items = shared.values.map((text) => `<si><t xml:space="preserve">${escapeXml(text)}</t></si>`).join('');
   return (
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    `<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${strings.length}" uniqueCount="${strings.length}">` +
+    `<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${shared.references}" uniqueCount="${shared.values.length}">` +
     items +
     '</sst>'
   );
@@ -458,13 +468,12 @@ export function toXlsx(sheets: SheetInput[]): Uint8Array {
     throw new Error('excel-lite: toXlsx needs at least one sheet');
   }
   const styles = new StyleBook();
-  const sharedStrings: string[] = [];
-  const sharedIndex = new Map<string, number>();
+  const shared = new SharedStrings();
   const usedNames = new Set<string>();
 
   const built = sheets.map((sheet, index) => ({
     name: uniqueSheetName(sheet.name ?? `Sheet${index + 1}`, usedNames),
-    xml: buildSheetXml(sheet, styles, sharedIndex, sharedStrings),
+    xml: buildSheetXml(sheet, styles, shared),
   }));
 
   const files: Record<string, Uint8Array> = {
@@ -473,7 +482,7 @@ export function toXlsx(sheets: SheetInput[]): Uint8Array {
     'xl/workbook.xml': encodeUtf8(workbookXml(built.map((sheet) => sheet.name))),
     'xl/_rels/workbook.xml.rels': encodeUtf8(workbookRelsXml(built.length)),
     'xl/styles.xml': encodeUtf8(styles.toXml()),
-    'xl/sharedStrings.xml': encodeUtf8(sharedStringsXml(sharedStrings)),
+    'xl/sharedStrings.xml': encodeUtf8(sharedStringsXml(shared)),
   };
   built.forEach((sheet, index) => {
     files[`xl/worksheets/sheet${index + 1}.xml`] = encodeUtf8(sheet.xml);
