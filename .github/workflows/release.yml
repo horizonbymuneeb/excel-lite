@@ -27,7 +27,18 @@ jobs:
           PKG=$(node -p "require('./package.json').version")
           TAG="${GITHUB_REF_NAME#v}"
           test "$PKG" = "$TAG" || { echo "tag $TAG does not match package.json $PKG"; exit 1; }
+      - name: is this version already on npm?
+        id: registry
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "excel-lite@$VERSION" version >/dev/null 2>&1; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+            echo "excel-lite@$VERSION is already published; skipping npm publish"
+          else
+            echo "already=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: publish with provenance
+        if: steps.registry.outputs.already == 'false'
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
