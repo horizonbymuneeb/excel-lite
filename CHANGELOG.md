@@ -40,6 +40,15 @@ All notable changes to this project are documented here. The format follows
 - the docs workflow also rebuilds when `src/` or the metrics script changes, since both move
   the badge numbers
 
+## [0.1.4] - 2026-11-04
+
+### Changed
+
+- README badge row trimmed to the five badges that are not repeated in the text below it
+  (npm version, CI, coverage, license, Node engines); the tests and browser-bundle numbers
+  moved into the opening paragraph, and their shields endpoint JSON is still published under
+  `/badges/` on the docs site for anyone who wants those badges
+
 ## [Unreleased]
 
 ### Added
