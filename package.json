@@ -45,7 +45,8 @@
     "check:bundle": "node scripts/check-browser-bundle.mjs",
     "verify": "npm run typecheck && npm run lint && npm test && npm run check:links && npm run check:bundle",
     "docs:build": "node site/build.mjs",
-    "docs:serve": "node site/serve.mjs"
+    "docs:serve": "node site/serve.mjs",
+    "metrics": "node scripts/metrics.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.2"

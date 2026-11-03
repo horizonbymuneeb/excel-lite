@@ -295,6 +295,42 @@ function build() {
   }
 
   writeFileSync(join(OUT, 'search-index.json'), JSON.stringify(search));
+
+  // Shields.io endpoint badges, refreshed every time the docs are deployed.
+  const badge = (label, message, color) => ({ schemaVersion: 1, label, message, color });
+  mkdirSync(join(OUT, 'badges'), { recursive: true });
+  writeFileSync(join(OUT, 'badges', 'docs.json'), JSON.stringify(badge('docs', `${PAGES.length} pages`, '0b6b5f')));
+  let metrics = null;
+  try {
+    metrics = JSON.parse(readFileSync(join(ROOT, 'site', 'metrics.json'), 'utf8'));
+  } catch {
+    console.warn('site/metrics.json missing — run `npm run metrics` for the tests/coverage badges');
+  }
+  if (metrics) {
+    const { tests, coverage, bundle } = metrics;
+    const allPassing = tests.failed === 0 && tests.passed === tests.total;
+    writeFileSync(
+      join(OUT, 'badges', 'tests.json'),
+      JSON.stringify(
+        badge(
+          'tests',
+          allPassing ? `${tests.passed} passing` : `${tests.failed} failing`,
+          allPassing ? '2ea44f' : 'd1242f',
+        ),
+      ),
+    );
+    const statements = coverage.statements;
+    writeFileSync(
+      join(OUT, 'badges', 'coverage.json'),
+      JSON.stringify(
+        badge('coverage', `${statements}%`, statements >= 90 ? '2ea44f' : statements >= 75 ? 'd4a72c' : 'd1242f'),
+      ),
+    );
+    writeFileSync(
+      join(OUT, 'badges', 'bundle.json'),
+      JSON.stringify(badge('browser bundle', `${bundle.minKb} kB min`, '2f6f9f')),
+    );
+  }
   copyFileSync(join(ROOT, 'site', 'assets', 'theme.css'), join(OUT, 'assets', 'theme.css'));
   copyFileSync(join(ROOT, 'site', 'assets', 'app.js'), join(OUT, 'assets', 'app.js'));
   writeFileSync(join(OUT, '.nojekyll'), '');

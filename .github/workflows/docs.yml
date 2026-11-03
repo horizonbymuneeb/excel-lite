@@ -37,6 +37,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: refresh badge metrics (tests, coverage, bundle size)
+        run: npm run metrics
       - name: build the documentation site
         run: npm run docs:build
       - name: sanity-check the output

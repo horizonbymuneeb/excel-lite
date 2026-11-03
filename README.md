@@ -2,10 +2,12 @@
 
 [![npm](https://img.shields.io/npm/v/excel-lite.svg)](https://www.npmjs.com/package/excel-lite)
 [![ci](https://github.com/horizonbymuneeb/excel-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/horizonbymuneeb/excel-lite/actions/workflows/ci.yml)
+[![docs](https://img.shields.io/endpoint?url=https://horizonbymuneeb.github.io/excel-lite/badges/docs.json)](https://horizonbymuneeb.github.io/excel-lite/)
+[![tests](https://img.shields.io/endpoint?url=https://horizonbymuneeb.github.io/excel-lite/badges/tests.json)](https://github.com/horizonbymuneeb/excel-lite/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/endpoint?url=https://horizonbymuneeb.github.io/excel-lite/badges/coverage.json)](https://horizonbymuneeb.github.io/excel-lite/performance.html)
+[![browser bundle](https://img.shields.io/endpoint?url=https://horizonbymuneeb.github.io/excel-lite/badges/bundle.json)](https://horizonbymuneeb.github.io/excel-lite/browser.html)
 [![license](https://img.shields.io/npm/l/excel-lite.svg)](LICENSE)
 [![node](https://img.shields.io/node/v/excel-lite.svg)](https://nodejs.org)
-[![docs](https://img.shields.io/badge/docs-live-0b6b5f)](https://horizonbymuneeb.github.io/excel-lite/)
-[![browser bundle](https://img.shields.io/badge/browser%20bundle-57%20kB-blue)](docs/browser.md)
 
 Read and write `.xlsx` in Node and the browser. No native builds, one 30 kB dependency
 (`fflate`), and an API small enough to keep in your head.
@@ -59,8 +61,8 @@ npm install excel-lite
 - **Node 22+** for anything that takes a file path — the library reads builtins through
   `process.getBuiltinModule`, so there is no `node:fs` import in the bundle.
 - **Browsers, workers, Bun, Deno** for everything else: `toXlsx()` returns a `Uint8Array`
-  and `readSheet()` takes a `Blob`/`ArrayBuffer`/`Uint8Array`. A browser-target bundle with
-  esbuild is ~57 kB and contains zero Node builtins.
+  and `readSheet()` takes a `Blob`/`ArrayBuffer`/`Uint8Array`. The esbuild browser bundle is
+  ~57 kB raw, 31 kB minified and 13 kB gzipped, and contains zero Node builtins.
 
 ## Reading
 

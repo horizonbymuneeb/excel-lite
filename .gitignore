@@ -6,3 +6,5 @@ dist/
 coverage/
 site/dist/
 site/screenshots/
+site/metrics.json
+.metrics-tests.json
