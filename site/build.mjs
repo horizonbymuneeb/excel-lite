@@ -26,6 +26,7 @@ import ini from 'highlight.js/lib/languages/ini';
 const ROOT = resolve(import.meta.dirname, '..');
 const OUT = join(ROOT, 'site', 'dist');
 const REPO_URL = 'https://github.com/horizonbymuneeb/excel-lite';
+const VERSION = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
 const REPO_BRANCH = 'main';
 
 for (const [name, language] of Object.entries({
@@ -261,7 +262,7 @@ function layout(page, content, headings) {
     </nav>
     <footer class="page-foot">
       <a href="${REPO_URL}/edit/${REPO_BRANCH}/${page.src}" target="_blank" rel="noreferrer noopener">Edit this page on GitHub</a>
-      <span>MIT licensed · excel-lite 0.1.1</span>
+      <span>MIT licensed · excel-lite ${VERSION}</span>
     </footer>
   </main>
   ${tocHtml(headings)}
