@@ -40,8 +40,11 @@ export rows) and does them on a modern runtime.
 npm install excel-lite
 ```
 
-Works in Node 18+, Bun, Deno and browsers/workers (writing in the browser uses `toXlsx`,
-which returns a `Uint8Array`).
+- **Node 22+** for anything that takes a file path — the library reads builtins through
+  `process.getBuiltinModule`, so there is no `node:fs` import in the bundle.
+- **Browsers, workers, Bun, Deno** for everything else: `toXlsx()` returns a `Uint8Array`
+  and `readSheet()` takes a `Blob`/`ArrayBuffer`/`Uint8Array`. A browser-target bundle with
+  esbuild is ~57 kB and contains zero Node builtins.
 
 ## Reading
 

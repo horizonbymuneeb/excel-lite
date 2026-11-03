@@ -1,3 +1,4 @@
+import { writeFileBytes } from './fs.js';
 import { encodeUtf8, zipFiles } from './zip.js';
 import { escapeXml } from './xml.js';
 import type { CellValue, ColumnSpec, RowInput, SheetInput, WriteOptions } from './types.js';
@@ -484,8 +485,7 @@ export function toXlsx(sheets: SheetInput[]): Uint8Array {
 /** Write a workbook to a file path (Node) and return the bytes. */
 export async function writeWorkbook(destination: string, sheets: SheetInput[]): Promise<Uint8Array> {
   const bytes = toXlsx(sheets);
-  const { writeFile } = await import('node:fs/promises');
-  await writeFile(destination, bytes);
+  await writeFileBytes(destination, bytes);
   return bytes;
 }
 

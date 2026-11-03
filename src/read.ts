@@ -1,3 +1,4 @@
+import { readFileBytes } from './fs.js';
 import { decodeUtf8, unzipEntries } from './zip.js';
 import {
   countRows,
@@ -34,11 +35,7 @@ const BUILTIN_DATE_FORMATS = new Set([
 // ---------------------------------------------------------------------------
 
 export async function toBytes(source: Source): Promise<Uint8Array> {
-  if (typeof source === 'string') {
-    const { readFile } = await import('node:fs/promises');
-    const buffer = await readFile(source);
-    return new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-  }
+  if (typeof source === 'string') return readFileBytes(source);
   if (source instanceof Uint8Array) return source;
   if (source instanceof ArrayBuffer) return new Uint8Array(source);
   if (typeof Blob !== 'undefined' && source instanceof Blob) {
