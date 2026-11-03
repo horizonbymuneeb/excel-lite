@@ -11,6 +11,20 @@ All notable changes to this project are documented here. The format follows
 - `package.json` now carries `repository`, `homepage` and `bugs`, so the npm page links back to
   the source, issue tracker and docs
 
+## [0.1.2] - 2026-11-04
+
+### Added
+
+- **live documentation site**: <https://horizonbymuneeb.github.io/excel-lite/> — the pages in
+  `docs/` rendered as a static site and deployed by `.github/workflows/docs.yml`, so the docs
+  and the code ship together
+- `site/verify.py`: headless Chromium pass over every page at 1440×980 and 390×844 (horizontal
+  overflow, console errors), 667 internal links and anchors, and text-contrast measurements
+
+### Changed
+
+- `homepage` in `package.json` points at the documentation site instead of the README anchor
+
 ## [Unreleased]
 
 ### Added
