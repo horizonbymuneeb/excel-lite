@@ -22,7 +22,8 @@ const pretty = (command, args) => {
   if (result.status !== 0) throw new Error(`${shown} exited with ${result.status}`);
 };
 
-// 1. build + tests with coverage
+// 1. build + tests with coverage (the CLI tests run against dist)
+pretty('npm', ['run', 'build']);
 pretty('npx', [
   'vitest',
   'run',
