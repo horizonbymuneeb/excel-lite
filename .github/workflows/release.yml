@@ -39,7 +39,9 @@ jobs:
           fi
       - name: publish with provenance
         if: steps.registry.outputs.already == 'false'
-        run: npm publish --access public --provenance
+        # Provenance needs OIDC; fall back to a plain publish on registries/tokens that
+        # cannot attach an attestation (the version is only published once either way).
+        run: npm publish --access public --provenance || npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: github release

@@ -1,6 +1,6 @@
 {
   "name": "excel-lite",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Read and write .xlsx in Node and the browser \u2014 streaming rows, no native deps, zero config.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -76,5 +76,13 @@
     "csv",
     "browser"
   ],
-  "author": "Muneeb Anjum <horizonbymuneeb@users.noreply.github.com>"
+  "author": "Muneeb Anjum <horizonbymuneeb@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/horizonbymuneeb/excel-lite.git"
+  },
+  "homepage": "https://github.com/horizonbymuneeb/excel-lite#readme",
+  "bugs": {
+    "url": "https://github.com/horizonbymuneeb/excel-lite/issues"
+  }
 }
