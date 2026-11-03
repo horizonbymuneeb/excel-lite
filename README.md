@@ -4,12 +4,14 @@
 [![ci](https://github.com/horizonbymuneeb/excel-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/horizonbymuneeb/excel-lite/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/excel-lite.svg)](LICENSE)
 [![node](https://img.shields.io/node/v/excel-lite.svg)](https://nodejs.org)
-[![browser bundle](https://img.shields.io/badge/browser%20bundle-57%20kB-blue)](#browsers)
+[![docs](https://img.shields.io/badge/docs-live-0b6b5f)](https://horizonbymuneeb.github.io/excel-lite/)
+[![browser bundle](https://img.shields.io/badge/browser%20bundle-57%20kB-blue)](docs/browser.md)
 
 Read and write `.xlsx` in Node and the browser. No native builds, one 30 kB dependency
 (`fflate`), and an API small enough to keep in your head.
 
-**[Docs](docs/README.md)** ·
+**[Docs site](https://horizonbymuneeb.github.io/excel-lite/)** ·
+**[Docs source](docs/README.md)** ·
 [Reading](docs/reading.md) ·
 [Writing](docs/writing.md) ·
 [API](docs/api.md) ·
@@ -205,6 +207,10 @@ writeWorkbook(dest, sheets): Promise<Uint8Array>
 ```
 
 ## Docs
+
+The same pages are published as a site: **<https://horizonbymuneeb.github.io/excel-lite/>** —
+built from this repository by `.github/workflows/docs.yml`, so the docs and the code can never
+drift. Source of truth stays in [`docs/`](docs/README.md).
 
 | Page | What it covers |
 |---|---|

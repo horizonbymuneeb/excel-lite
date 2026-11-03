@@ -43,7 +43,9 @@
     "coverage": "npm run build && vitest run -c vitest.config.coverage.ts --coverage",
     "check:links": "node scripts/check-links.mjs",
     "check:bundle": "node scripts/check-browser-bundle.mjs",
-    "verify": "npm run typecheck && npm run lint && npm test && npm run check:links && npm run check:bundle"
+    "verify": "npm run typecheck && npm run lint && npm test && npm run check:links && npm run check:bundle",
+    "docs:build": "node site/build.mjs",
+    "docs:serve": "node site/serve.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.2"
@@ -54,6 +56,8 @@
     "@vitest/coverage-v8": "^3.2.7",
     "eslint": "^10.14.0",
     "exceljs": "^4.4.0",
+    "highlight.js": "^11.12.0",
+    "markdown-it": "^15.0.3",
     "prettier": "^3.9.10",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
@@ -81,7 +85,7 @@
     "type": "git",
     "url": "git+https://github.com/horizonbymuneeb/excel-lite.git"
   },
-  "homepage": "https://github.com/horizonbymuneeb/excel-lite#readme",
+  "homepage": "https://horizonbymuneeb.github.io/excel-lite/",
   "bugs": {
     "url": "https://github.com/horizonbymuneeb/excel-lite/issues"
   }

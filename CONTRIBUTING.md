@@ -26,6 +26,8 @@ npm run typecheck
 npm run lint
 npm run coverage
 npm run bench               # 50k rows vs ExcelJS and SheetJS, ~1 minute
+npm run docs:build          # render the docs site into site/dist
+npm run docs:serve          # preview it at http://localhost:4180
 ```
 
 Node 22+ is required for anything that takes a file path (`process.getBuiltinModule`);
@@ -56,6 +58,11 @@ python3 -m venv /tmp/venv-openpyxl
 | `scripts/`     | benchmark, fixture generator, verification helpers                           |
 
 Architecture details, including where to change what: [`docs/architecture.md`](docs/architecture.md).
+
+Docs changes: edit the markdown in `docs/`, then `npm run docs:build` and `npm run docs:serve`.
+`python3 site/verify.py` (needs `pip install playwright && playwright install chromium`) checks
+every page for horizontal overflow and console errors at 1440×980 and 390×844, crawls internal
+links and anchors, and measures text contrast. CI deploys `site/dist` to GitHub Pages.
 
 ## Rules of the road
 
