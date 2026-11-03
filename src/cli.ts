@@ -96,6 +96,13 @@ function rowArray(row: SheetRow, keys: string[]): string[] {
   return keys.map((key) => cellText(row[key] ?? null));
 }
 
+function ignoreBrokenPipe(stream: NodeJS.WriteStream | Writable): void {
+  stream.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EPIPE') process.exit(0);
+    throw error;
+  });
+}
+
 async function main(argv: string[]): Promise<void> {
   const { command, file, options } = parseArgs(argv);
   if (command === 'help' || command === '') {
@@ -118,6 +125,7 @@ async function main(argv: string[]): Promise<void> {
   }
 
   const sink = options.out ? createWriteStream(options.out, 'utf8') : (process.stdout as unknown as Writable);
+  ignoreBrokenPipe(sink);
 
   let headerKeys: string[] | null = null;
   let first = true;

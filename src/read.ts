@@ -382,9 +382,14 @@ export async function* readSheet(source: Source, options: ReadOptions = {}): Asy
 export interface Workbook {
   sheetNames: string[];
   /** Iterate one sheet, picked by name or index (default: the first). */
-  sheet(sheet?: string | number, options?: { header?: boolean }): AsyncGenerator<SheetRow>;
+  sheet<T extends boolean = false>(
+    sheet?: string | number,
+    options?: { header?: T },
+  ): AsyncGenerator<T extends true ? RowObject : CellValue[]>;
   /** Stack of every sheet in order. */
-  sheets(options?: { header?: boolean }): AsyncGenerator<SheetRow>[];
+  sheets<T extends boolean = false>(
+    options?: { header?: T },
+  ): AsyncGenerator<T extends true ? RowObject : CellValue[]>[];
 }
 
 export async function readWorkbook(source: Source): Promise<Workbook> {
@@ -393,15 +398,18 @@ export async function readWorkbook(source: Source): Promise<Workbook> {
     (async function* () {
       yield* reader.rows(index, header);
     })();
-  return {
+  const workbook = {
     sheetNames: reader.sheetNames,
-    sheet(sheet = 0, options = {}) {
+    sheet(sheet: string | number = 0, options: { header?: boolean } = {}) {
       return stream(reader.resolveSheet(sheet), Boolean(options.header));
     },
-    sheets(options = {}) {
+    sheets(options: { header?: boolean } = {}) {
       return reader.sheetNames.map((_, index) => stream(index, Boolean(options.header)));
     },
   };
+  // The generic signatures above give callers `RowObject` vs `CellValue[]` based on
+  // `header`, which the runtime implementation cannot express on its own.
+  return workbook as unknown as Workbook;
 }
 
 /** Sheet names plus row counts, without materialising cell values. */

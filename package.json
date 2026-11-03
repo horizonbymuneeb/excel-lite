@@ -15,7 +15,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "excel-lite": "./dist/cli.js"
+    "excel-lite": "dist/cli.js"
   },
   "files": [
     "dist",
