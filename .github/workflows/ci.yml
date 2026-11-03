@@ -86,6 +86,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - run: npm ci
       - run: pip install -r scripts/requirements-fixtures.txt
       - run: python3 scripts/make-fixtures.py --out /tmp/regenerated-fixtures
       - name: committed fixtures must match what the generator produces
