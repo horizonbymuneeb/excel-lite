@@ -6,6 +6,8 @@ on:
     paths:
       - 'docs/**'
       - 'site/**'
+      - 'scripts/metrics.mjs'
+      - 'src/**'
       - 'README.md'
       - 'ROADMAP.md'
       - 'CONTRIBUTING.md'
