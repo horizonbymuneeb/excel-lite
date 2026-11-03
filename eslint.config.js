@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'fixtures/**', 'coverage/**', 'examples/**'] },
+  { ignores: ['dist/**', 'node_modules/**', 'fixtures/**', 'coverage/**', 'examples/**', 'site/dist/**', '**/*.py'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -46,6 +46,34 @@ export default tseslint.config(
       },
     },
     rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
+    files: ['site/assets/**/*.js'],
+    languageOptions: {
+      globals: {
+        document: 'readonly',
+        window: 'readonly',
+        localStorage: 'readonly',
+        fetch: 'readonly',
+        navigator: 'readonly',
+        IntersectionObserver: 'readonly',
+        setTimeout: 'readonly',
+        console: 'readonly',
+      },
+    },
+    rules: { 'no-console': 'off' },
+  },
+  {
+    files: ['site/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+      },
+    },
+    rules: { 'no-console': 'off' },
   },
   {
     files: ['scripts/**/*.mjs', '*.config.ts', '*.config.js', 'eslint.config.js'],

@@ -46,7 +46,7 @@ jobs:
           count=$(ls site/dist/*.html | wc -l)
           echo "pages: $count"
           test "$count" -ge 20
-          if grep -rq "node:" site/dist/*.html; then echo "unexpected node: reference in docs"; exit 1; fi
+          if grep -rq "__ID__" site/dist/*.html; then echo "unrendered anchor placeholder in docs"; exit 1; fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site/dist
