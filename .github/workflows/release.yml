@@ -39,9 +39,23 @@ jobs:
           fi
       - name: publish with provenance
         if: steps.registry.outputs.already == 'false'
-        # Provenance needs OIDC; fall back to a plain publish on registries/tokens that
-        # cannot attach an attestation (the version is only published once either way).
-        run: npm publish --access public --provenance || npm publish --access public
+        # Provenance needs OIDC; fall back to a plain publish on registries/tokens that cannot
+        # attach an attestation. If a publish for this version landed concurrently (local
+        # `npm publish` while the tag was being pushed), the exit code is a lie — so verify
+        # that the version is on the registry instead of trusting it.
+        run: |
+          npm publish --access public --provenance || npm publish --access public || true
+          VERSION=$(node -p "require('./package.json').version")
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if npm view "excel-lite@$VERSION" version >/dev/null 2>&1; then
+              echo "excel-lite@$VERSION is on the registry"
+              exit 0
+            fi
+            echo "waiting for the registry ($attempt/10)…"
+            sleep 15
+          done
+          echo "excel-lite@$VERSION never appeared on the registry"
+          exit 1
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: github release
