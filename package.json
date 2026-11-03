@@ -1,0 +1,61 @@
+{
+  "name": "excel-lite",
+  "version": "0.1.0",
+  "description": "Read and write .xlsx in Node and the browser \u2014 streaming rows, no native deps, zero config.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "excel-lite": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "npm run build && vitest run",
+    "bench": "node scripts/bench.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prepublishOnly": "npm run typecheck && npm test",
+    "fixtures": "python3 scripts/make-fixtures.py"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "exceljs": "^4.4.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "keywords": [
+    "xlsx",
+    "excel",
+    "spreadsheet",
+    "ooxml",
+    "reader",
+    "writer",
+    "streaming",
+    "csv",
+    "browser"
+  ],
+  "author": "Muneeb Anjum <horizonbymuneeb@users.noreply.github.com>"
+}
