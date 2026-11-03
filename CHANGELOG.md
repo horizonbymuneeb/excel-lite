@@ -25,6 +25,21 @@ All notable changes to this project are documented here. The format follows
 
 - `homepage` in `package.json` points at the documentation site instead of the README anchor
 
+## [0.1.3] - 2026-11-04
+
+### Added
+
+- **self-hosted dynamic badges**: tests, coverage, browser-bundle size and docs page count are
+  published as shields.io endpoint JSON under `/badges/` on the documentation site, so a badge
+  changes when the repository numbers change instead of going stale (refreshed by every docs
+  deploy through `scripts/metrics.mjs`)
+
+### Changed
+
+- the README badge row now links each number to where it comes from (CI, docs site, bundle notes)
+- the docs workflow also rebuilds when `src/` or the metrics script changes, since both move
+  the badge numbers
+
 ## [Unreleased]
 
 ### Added
