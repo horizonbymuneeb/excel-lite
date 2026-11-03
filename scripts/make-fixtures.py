@@ -32,6 +32,30 @@ ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / "fixtures"
 FIXTURES.mkdir(exist_ok=True)
 
+# Fixed timestamps so the checked-in fixtures are byte-for-byte reproducible; CI fails
+# when `python3 scripts/make-fixtures.py` changes anything under fixtures/.
+FIXED_TIME = (2024, 1, 1, 0, 0, 0)
+FIXED_STAMP = dt.datetime(2024, 1, 1, 0, 0, 0)
+
+
+def _fix_properties(workbook: Workbook) -> None:
+    workbook.properties.creator = "excel-lite fixtures"
+    workbook.properties.lastModifiedBy = "excel-lite fixtures"
+    workbook.properties.created = FIXED_STAMP
+    workbook.properties.modified = FIXED_STAMP
+
+
+def _normalize_zip(path: Path) -> None:
+    """Rewrite a workbook with sorted entries and fixed timestamps."""
+    with zipfile.ZipFile(path) as source:
+        entries = [(info.filename, source.read(info.filename)) for info in source.infolist()]
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as target:
+        for name, payload in sorted(entries):
+            info = zipfile.ZipInfo(name, FIXED_TIME)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o600 << 16
+            target.writestr(info, payload)
+
 
 def mixed() -> None:
     """Values of every kind, plus a second sheet and a blank row."""
@@ -54,6 +78,7 @@ def mixed() -> None:
     notes["A1"].fill = PatternFill("solid", fgColor="FF1F2937")
     notes["B2"].alignment = Alignment(horizontal="right")
 
+    _fix_properties(workbook)
     workbook.save(FIXTURES / "openpyxl-mixed.xlsx")
 
 
@@ -83,6 +108,7 @@ def formats() -> None:
         for cell in row:
             cell.number_format = "yyyy-mm-dd hh:mm:ss"
     sheet.column_dimensions[get_column_letter(1)].width = 12
+    _fix_properties(workbook)
     workbook.save(FIXTURES / "openpyxl-formats.xlsx")
 
 
@@ -96,6 +122,7 @@ def mac_dates() -> None:
     sheet.append(["aligned", dt.date(2024, 1, 2), dt.datetime(2024, 1, 2, 3, 4, 5), dt.time(6, 30)])
     sheet.append(["epoch", dt.date(1904, 1, 1), dt.datetime(1904, 1, 1), dt.time(0, 0)])
     sheet.column_dimensions["B"].width = 14
+    _fix_properties(workbook)
     workbook.save(FIXTURES / "openpyxl-1904.xlsx")
 
 
@@ -115,6 +142,7 @@ def shapes() -> None:
     sheet.merge_cells("A3:C3")
     sheet["A3"] = "merged block"  # only the top-left cell holds a value
     sheet.append(["only"])
+    _fix_properties(workbook)
     workbook.save(FIXTURES / "openpyxl-shapes.xlsx")
 
 
@@ -141,6 +169,7 @@ def non_dates() -> None:
     for column, code in formats.items():
         for row in range(2, 4):
             sheet[f"{column}{row}"].number_format = code
+    _fix_properties(workbook)
     workbook.save(FIXTURES / "openpyxl-nondates.xlsx")
 
 
@@ -153,6 +182,7 @@ def serial_dates() -> None:
     for serial in (0, 1, 2, 59, 60, 61, 36525):
         sheet.append([serial, serial])
         sheet.cell(row=sheet.max_row, column=2).number_format = "yyyy-mm-dd"
+    _fix_properties(workbook)
     workbook.save(FIXTURES / "openpyxl-serial-dates.xlsx")
 
 
@@ -164,6 +194,7 @@ def header_edges() -> None:
     sheet.append(["name", "name", 123, None, "name"])
     sheet.append(["a", "b", "c", "d", "e", "f"])  # one column past the header
     sheet.append(["g"])  # shorter than the header
+    _fix_properties(workbook)
     workbook.save(FIXTURES / "openpyxl-headers.xlsx")
 
 
@@ -175,6 +206,7 @@ def wide() -> None:
     sheet.append([f"c{index}" for index in range(200)])
     sheet.append([index for index in range(200)])
     sheet.append([index * 1.5 - 10 for index in range(200)])
+    _fix_properties(workbook)
     workbook.save(FIXTURES / "openpyxl-wide.xlsx")
 
 
@@ -296,8 +328,11 @@ def handmade() -> None:
     }
     target = FIXTURES / "handmade-cells.xlsx"
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
-        for name, body in files.items():
-            archive.writestr(name, body.encode("utf-8"))
+        for name, body in sorted(files.items()):
+            info = zipfile.ZipInfo(name, FIXED_TIME)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o600 << 16
+            archive.writestr(info, body.encode("utf-8"))
 
 
 if __name__ == "__main__":
@@ -310,5 +345,7 @@ if __name__ == "__main__":
     header_edges()
     wide()
     handmade()
+    for path in sorted(FIXTURES.glob("*.xlsx")):
+        _normalize_zip(path)
     for path in sorted(FIXTURES.glob("*.xlsx")):
         print(f"{path.name}: {path.stat().st_size} bytes")

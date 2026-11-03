@@ -10,13 +10,14 @@ updates:
         dependency-type: development
         update-types: [minor, patch]
     ignore:
-      # SheetJS and ExcelJS are cross-check oracles: pinning their majors keeps
-      # the compatibility tests meaningful.
-      - dependency-name: xlsx
-        update-types: [version-update:semver-major]
-      - dependency-name: exceljs
+      # Majors are reviewed by hand: this package ships to users, and a major test/lint
+      # bump needs a migration, not an automated PR.
+      - dependency-name: '*'
         update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
