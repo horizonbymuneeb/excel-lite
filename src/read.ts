@@ -139,18 +139,25 @@ function sharedStringText(si: XmlNode): string {
   return out;
 }
 
+/** Turn a header row into unique keys: blanks get `column_N`, duplicates get `_2`, `_3`… */
 function makeKeys(row: CellValue[]): string[] {
   const keys: string[] = [];
-  const seen = new Map<string, number>();
+  const used = new Set<string>();
   for (let i = 0; i < row.length; i++) {
     const value = row[i];
-    let key = value === null || value === undefined ? '' : String(value).trim();
-    if (key === '') key = `column_${i + 1}`;
-    const count = seen.get(key) ?? 0;
-    seen.set(key, count + 1);
-    keys.push(count === 0 ? key : `${key}_${count + 1}`);
+    const label = value === null || value === undefined ? '' : String(value).trim();
+    keys.push(uniqueKey(label === '' ? `column_${i + 1}` : label, used));
   }
   return keys;
+}
+
+/** Add `_2`, `_3`, … until the key is unused, and record it. */
+function uniqueKey(base: string, used: Set<string>): string {
+  let key = base;
+  let suffix = 2;
+  while (used.has(key)) key = `${base}_${suffix++}`;
+  used.add(key);
+  return key;
 }
 
 interface SheetRef {
@@ -266,12 +273,14 @@ export class WorkbookReader {
   resolveSheet(sheet: string | number | undefined): number {
     if (sheet === undefined || sheet === null) return 0;
     if (typeof sheet === 'number') {
-      if (sheet < 0 || sheet >= this.refs.length) {
-        throw new RangeError(
-          `excel-lite: sheet index ${sheet} is out of range (workbook has ${this.refs.length} sheet(s))`,
-        );
-      }
-      return sheet;
+      if (sheet >= 0 && sheet < this.refs.length) return sheet;
+      // `--sheet 1` may also mean a sheet literally named "1"; support that when the
+      // number cannot be an index.
+      const literal = this.sheetNames.indexOf(String(sheet));
+      if (literal !== -1) return literal;
+      throw new RangeError(
+        `excel-lite: sheet index ${sheet} is out of range (workbook has ${this.refs.length} sheet(s))`,
+      );
     }
     const exact = this.sheetNames.indexOf(sheet);
     if (exact !== -1) return exact;
@@ -352,8 +361,15 @@ export class WorkbookReader {
         continue;
       }
       const row: RowObject = {};
-      for (let i = 0; i < keys.length; i++) row[keys[i]] = values[i] ?? null;
-      for (let i = keys.length; i < values.length; i++) row[`column_${i + 1}`] = values[i] ?? null;
+      const used = new Set<string>();
+      for (let i = 0; i < keys.length; i++) {
+        used.add(keys[i]);
+        row[keys[i]] = values[i] ?? null;
+      }
+      // Values past the header keep their column position without overwriting a key.
+      for (let i = keys.length; i < values.length; i++) {
+        row[uniqueKey(`column_${i + 1}`, used)] = values[i] ?? null;
+      }
       yield row;
     }
   }

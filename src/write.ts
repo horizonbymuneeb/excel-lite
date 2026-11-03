@@ -10,8 +10,9 @@ const MAX_STRING = 32_767;
 /** Reverse of `serialToDate`: a JS Date becomes the Excel serial number. */
 export function dateToSerial(date: Date): number {
   const shifted = (date.getTime() - EXCEL_EPOCH_1900) / DAY_MS;
-  // Serials below 61 are shifted by one day because of Excel's phantom 1900-02-29.
-  if (shifted > 61) return shifted;
+  // Excel's phantom 1900-02-29 shifts every serial below 61 by one day. Serial 61 is
+  // 1900-03-01 and is NOT shifted, so the boundary is inclusive.
+  if (shifted >= 61) return shifted;
   if (shifted >= 1) return shifted - 1;
   return shifted;
 }
@@ -322,7 +323,7 @@ function buildSheetXml(sheet: SheetInput, styles: StyleBook, shared: SharedStrin
       const column = columns[index];
       const styleId = column
         ? styles.xfId({
-            numFmtId: column.format && !looksLikeDateFormat(column.format) ? styles.numFmtId(column.format) : 0,
+            numFmtId: column.format ? styles.numFmtId(column.format) : 0,
             bold: column.bold,
             fill: column.fill,
             align: column.align,

@@ -35,8 +35,19 @@ First release. Read and write `.xlsx` in Node 22+ and in browsers.
 - CLI: `excel-lite info | to-json | to-csv` with NDJSON streaming, `--pretty`, `--out`,
   `--delimiter`, `--sheet`, `--header`
 - dual ESM/CJS build with TypeScript declarations; no Node builtins in the browser graph
-- 25 tests, cross-validated against ExcelJS, SheetJS and openpyxl
+- 157 tests across reader, writer, API, CLI and edge cases, cross-validated against
+  ExcelJS, SheetJS and openpyxl; 93% statement coverage
 - benchmark harness (`npm run bench`) reporting write/read time, peak RSS and file size
+
+### Fixed before first release
+
+- `dateToSerial` wrote 1900-03-01 as serial 60 (the phantom 1900-02-29 slot), so the cell
+  rendered one day early; serials at and after the 1900 leap-bug boundary now match Excel
+- numeric cells now honour a date-like column format instead of silently falling back to
+  General
+- header mode produces unique keys even when a duplicate header collides with a generated
+  `_2` key, and extra columns can no longer overwrite an identically named header key
+- the CLI no longer prints the `excel-lite:` prefix twice
 
 ### Notes
 

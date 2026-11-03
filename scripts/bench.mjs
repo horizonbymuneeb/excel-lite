@@ -69,7 +69,7 @@ async function child(lib, mode, file) {
     }
   } else if (lib === 'excel-lite') {
     const { readSheet } = await import('excel-lite');
-    for await (const _row of readSheet(file)) produced++; // eslint-disable-line no-unused-vars
+    for await (const _row of readSheet(file)) produced++;
   } else if (lib === 'ExcelJS') {
     const { default: ExcelJS } = await import('exceljs');
     const workbook = new ExcelJS.Workbook();
@@ -176,8 +176,16 @@ function main() {
   console.log('| | excel-lite | ExcelJS | SheetJS |');
   console.log('|---|---|---|---|');
   const cell = (key) => libs.map((lib) => results[lib][key]);
-  console.log(`| write ${rowsLabel} rows | ${cell('write').map((r) => formatMs(r.ms)).join(' | ')} |`);
-  console.log(`| read ${rowsLabel} rows | ${cell('read').map((r) => formatMs(r.ms)).join(' | ')} |`);
+  console.log(
+    `| write ${rowsLabel} rows | ${cell('write')
+      .map((r) => formatMs(r.ms))
+      .join(' | ')} |`,
+  );
+  console.log(
+    `| read ${rowsLabel} rows | ${cell('read')
+      .map((r) => formatMs(r.ms))
+      .join(' | ')} |`,
+  );
   console.log(
     `| peak RSS (read) | ${cell('read')
       .map((r) => `${((r.rss - base) / 1024 / 1024).toFixed(0)} MB`)

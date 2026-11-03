@@ -197,3 +197,66 @@ describe('errors', () => {
     expect(() => toXlsx([])).toThrow(/at least one sheet/i);
   });
 });
+
+describe('cross round-trip: ours -> third party -> ours', () => {
+  const dateOnly = new Date(Date.UTC(2024, 4, 17));
+  const dateTime = new Date(Date.UTC(2024, 4, 17, 13, 45, 30));
+  const values: (string | number | boolean | Date | null)[][] = [
+    ['text', 'a & b <c>', 'Ünïcode ✓ 😀'],
+    [42, -3.25, 10_000_000_000],
+    [true, false, null],
+    [dateOnly, dateTime, null],
+  ];
+  // Rows stop at their last non-null cell, so the trailing nulls are not rows of nulls.
+  const expected: (string | number | boolean | Date | null)[][] = [
+    ['text', 'a & b <c>', 'Ünïcode ✓ 😀'],
+    [42, -3.25, 10_000_000_000],
+    [true, false],
+    [dateOnly, dateTime],
+  ];
+
+  it('survives a rewrite by ExcelJS', async () => {
+    const ours = file('cross-ours.xlsx');
+    writeFileSync(ours, toXlsx([{ name: 'Values', rows: values }]));
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(ours);
+    const viaExcelJs = file('cross-exceljs.xlsx');
+    await workbook.xlsx.writeFile(viaExcelJs);
+
+    expect(await collect(readSheet(viaExcelJs))).toEqual(expected);
+  });
+
+  it('survives a rewrite by SheetJS', async () => {
+    const ours = file('cross-ours-2.xlsx');
+    const bytes = toXlsx([{ name: 'Values', rows: values }]);
+    writeFileSync(ours, bytes);
+
+    const workbook = XLSX.read(bytes, { type: 'buffer', cellNF: true, cellStyles: true });
+    const out = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer', cellNF: true, cellStyles: true });
+    const viaSheetJs = file('cross-sheetjs.xlsx');
+    writeFileSync(viaSheetJs, out);
+
+    expect(await collect(readSheet(viaSheetJs))).toEqual(expected);
+  });
+
+  it('keeps every sheet through an ExcelJS rewrite', async () => {
+    const ours = file('cross-multi.xlsx');
+    writeFileSync(
+      ours,
+      toXlsx([
+        { name: 'First', rows: [['a', 1]] },
+        { name: 'Second', rows: [['b', 2]] },
+      ]),
+    );
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(ours);
+    const rewritten = file('cross-multi-exceljs.xlsx');
+    await workbook.xlsx.writeFile(rewritten);
+
+    const reopened = await readWorkbook(rewritten);
+    expect(reopened.sheetNames).toEqual(['First', 'Second']);
+    expect(await collect(reopened.sheet('First'))).toEqual([['a', 1]]);
+    expect(await collect(reopened.sheet('Second'))).toEqual([['b', 2]]);
+  });
+});

@@ -79,7 +79,9 @@ What the reader understands:
   returned as `Date` objects in **UTC**, so a server in Karachi and a server in Lisbon
   return the same instant
 - sparse rows (`A` and `C` present, `B` missing → `null` in the middle), blank rows skipped
-- sheet lookup by name or index, `header: true` with duplicate/blank header handling
+- sheet lookup by name or index, `header: true` with unique keys even when headers repeat
+- Excel's phantom 1900-02-29 (serial 60) has no representable date; it reads as 1900-03-01
+  and is written back as serial 61
 
 ## Writing
 

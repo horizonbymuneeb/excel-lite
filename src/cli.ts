@@ -162,6 +162,6 @@ async function main(argv: string[]): Promise<void> {
 
 main(process.argv.slice(2)).catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
-  process.stderr.write(`excel-lite: ${message}\n`);
+  process.stderr.write(`${message.startsWith('excel-lite:') ? message : `excel-lite: ${message}`}\n`);
   process.exitCode = 1;
 });
