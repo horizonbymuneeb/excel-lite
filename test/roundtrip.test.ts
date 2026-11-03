@@ -57,7 +57,13 @@ describe('roundtrip', () => {
 
   it('writes multiple sheets and reads each by name or index', async () => {
     const bytes = toXlsx([
-      { name: 'First', rows: [['a', 1], ['b', 2]] },
+      {
+        name: 'First',
+        rows: [
+          ['a', 1],
+          ['b', 2],
+        ],
+      },
       { name: 'Second', rows: [['c', 3]] },
     ]);
     writeFileSync(file('multi.xlsx'), bytes);

@@ -189,8 +189,12 @@ export class WorkbookReader {
     let parts: Record<string, Uint8Array>;
     try {
       parts = unzipEntries(bytes, [WORKBOOK_PART, WORKBOOK_RELS_PART]);
-    } catch {
-      throw new Error('excel-lite: could not read the archive — the file is not a zip (.xlsx/.xlsm) container');
+    } catch (error) {
+      // Keep the zip-bomb guard's own message instead of relabelling it as a format error.
+      if (error instanceof Error && error.message.includes('safety limit')) throw error;
+      throw new Error('excel-lite: could not read the archive — the file is not a zip (.xlsx/.xlsm) container', {
+        cause: error,
+      });
     }
     const workbookBytes = parts[WORKBOOK_PART];
     if (!workbookBytes) {

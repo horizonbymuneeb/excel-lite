@@ -28,6 +28,26 @@ export default tseslint.config(
     },
   },
   {
+    files: ['test/**/*.ts'],
+    languageOptions: {
+      globals: { process: 'readonly', console: 'readonly', Buffer: 'readonly', URL: 'readonly' },
+    },
+  },
+  {
+    files: ['test/**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        require: 'readonly',
+        module: 'writable',
+        __dirname: 'readonly',
+      },
+    },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
     files: ['scripts/**/*.mjs', '*.config.ts', '*.config.js', 'eslint.config.js'],
     languageOptions: {
       globals: {

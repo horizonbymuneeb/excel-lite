@@ -6,7 +6,8 @@ users actually hit, not by what is fun to build. Discussion happens in the issue
 ## 0.2 — memory and formats
 
 - **True streaming reader.** Today the sheet XML is decompressed into memory before rows are
-  parsed, so peak RSS is roughly 8× the file size (`docs/performance.md`). A chunked
+  parsed, so peak memory grows with the amount of cell data (62 MB for the 50k-row benchmark,
+  ~218 MB for 100k rows — `docs/performance.md`). A chunked
   inflate → incremental row scanner keeps memory independent of file size.
 - **`maxEntryBytes` as a public option.** The zip-bomb guard is currently a fixed 512 MiB.
 - **Merge cells on write.** Read already surfaces the top-left value; writing `merges` is a

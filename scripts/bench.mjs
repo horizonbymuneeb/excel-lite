@@ -45,7 +45,9 @@ function makeRows(count) {
 // ---------------------------------------------------------------------------
 
 async function child(lib, mode, file) {
-  const rows = makeRows(ROWS);
+  // Only the write measurement needs the source data; building it for reads would inflate
+  // their peak RSS with ~50 MB of harness objects.
+  const rows = mode === 'write' ? makeRows(ROWS) : [];
   const started = performance.now();
   let produced = 0;
 

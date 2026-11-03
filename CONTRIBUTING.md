@@ -8,7 +8,7 @@ operational data, so "it works on my one file" is not the bar. Tests and honest 
 
 - **Report a bug** with a minimal `.xlsx` fixture or a script that generates one, plus what
   you expected and what you got. Issues that can be reproduced are fixed first.
-- **Add a fixture** produced by a *different* implementation (Excel, LibreOffice, Google
+- **Add a fixture** produced by a _different_ implementation (Excel, LibreOffice, Google
   Sheets, openpyxl, ExcelJS, SheetJS, a customer export). Cross-implementation fixtures are
   the most valuable thing this project can receive.
 - **Improve the docs.** If the docs and the code disagree, that is a bug — send a PR with
@@ -41,19 +41,19 @@ python3 -m venv /tmp/venv-openpyxl
 
 ## Project layout
 
-| Path | What lives there |
-|---|---|
-| `src/read.ts` | workbook parsing: zip parts, rels, styles, shared strings, row iteration |
-| `src/write.ts` | OOXML generation: sheet XML, shared strings, styles, package parts |
-| `src/xml.ts` | the XML reader: small DOM for metadata, row scanner for worksheets |
-| `src/zip.ts` | fflate wrappers (`unzipEntries` only inflates what is asked for) |
-| `src/fs.ts` | Node fs access without a `node:fs` import (browser-safe) |
-| `src/cli.ts` | `info`, `to-json`, `to-csv` |
-| `test/` | vitest suites, run against the built `dist` (so packaging bugs fail tests) |
-| `fixtures/` | workbooks produced by openpyxl — never by our own writer |
-| `docs/` | the manual: reading, writing, API, CLI, recipes, performance, compatibility… |
-| `examples/` | runnable scripts (`node examples/basic-read.mjs`) |
-| `scripts/` | benchmark, fixture generator, verification helpers |
+| Path           | What lives there                                                             |
+| -------------- | ---------------------------------------------------------------------------- |
+| `src/read.ts`  | workbook parsing: zip parts, rels, styles, shared strings, row iteration     |
+| `src/write.ts` | OOXML generation: sheet XML, shared strings, styles, package parts           |
+| `src/xml.ts`   | the XML reader: small DOM for metadata, row scanner for worksheets           |
+| `src/zip.ts`   | fflate wrappers (`unzipEntries` only inflates what is asked for)             |
+| `src/fs.ts`    | Node fs access without a `node:fs` import (browser-safe)                     |
+| `src/cli.ts`   | `info`, `to-json`, `to-csv`                                                  |
+| `test/`        | vitest suites, run against the built `dist` (so packaging bugs fail tests)   |
+| `fixtures/`    | workbooks produced by openpyxl — never by our own writer                     |
+| `docs/`        | the manual: reading, writing, API, CLI, recipes, performance, compatibility… |
+| `examples/`    | runnable scripts (`node examples/basic-read.mjs`)                            |
+| `scripts/`     | benchmark, fixture generator, verification helpers                           |
 
 Architecture details, including where to change what: [`docs/architecture.md`](docs/architecture.md).
 

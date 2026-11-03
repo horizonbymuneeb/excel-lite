@@ -128,14 +128,29 @@ describe('writer corner cases', () => {
 describe('header detection', () => {
   it('uses the first non-empty row as the header', async () => {
     const path = temp('first-non-empty.xlsx');
-    await writeSheet(path, [[null, null], ['name', 'age'], ['Ali', 27]], { header: false });
+    await writeSheet(
+      path,
+      [
+        [null, null],
+        ['name', 'age'],
+        ['Ali', 27],
+      ],
+      { header: false },
+    );
     const rows = (await collect(readSheet(path, { header: true }))) as Array<Record<string, CellValue>>;
     expect(rows).toEqual([{ name: 'Ali', age: 27 }]);
   });
 
   it('skips fully blank leading rows when header mode is off', async () => {
     const path = temp('blank-leading.xlsx');
-    await writeSheet(path, [[null, null], [1, 2]], { header: false });
+    await writeSheet(
+      path,
+      [
+        [null, null],
+        [1, 2],
+      ],
+      { header: false },
+    );
     expect(await collect(readSheet(path))).toEqual([[1, 2]]);
   });
 });

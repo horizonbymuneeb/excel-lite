@@ -3,8 +3,8 @@
 ## Supported versions
 
 | Version | Supported |
-|---|---|
-| 0.1.x | ✅ |
+| ------- | --------- |
+| 0.1.x   | ✅        |
 
 ## Reporting a vulnerability
 
@@ -37,8 +37,9 @@ third-party APIs. The design choices that matter:
 - **Written files are XML-escaped** and characters forbidden by XML 1.0 are stripped, so a
   cell value cannot break out of the document structure.
 
-Known non-issues: a workbook can still exhaust memory on a very large sheet (peak RSS is
-roughly 8× file size, see `docs/performance.md`). Treat the size of files you accept from
+Known non-issues: a workbook can still exhaust memory on a very large sheet — peak memory grows
+with decompressed cell data, not with the compressed file size (62 MB for a 50k-row benchmark,
+~218 MB for 100k rows; see `docs/performance.md`). Treat the size of files you accept from
 untrusted users as a denial-of-service budget, and cap uploads at your edge.
 
 ## Dependency policy

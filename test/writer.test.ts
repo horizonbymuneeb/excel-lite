@@ -75,9 +75,7 @@ describe('sheet names', () => {
   });
 
   it('falls back to Sheet / Sheet2 for empty and missing names', async () => {
-    const names = (await listSheets(toXlsx([{ name: '', rows: [[1]] }, { rows: [[2]] }]))).map(
-      (sheet) => sheet.name,
-    );
+    const names = (await listSheets(toXlsx([{ name: '', rows: [[1]] }, { rows: [[2]] }]))).map((sheet) => sheet.name);
     // An empty name becomes "Sheet"; a sheet with no name gets the positional default.
     expect(names).toEqual(['Sheet', 'Sheet2']);
   });
@@ -110,14 +108,21 @@ describe('rows and columns', () => {
 
   it('writes array rows in the column order given', async () => {
     const path = temp('arrays.xlsx');
-    const bytes = await writeSheet(path, [[1, 'one'], [2, 'two']], {
-      columns: [{ key: 'id' }, { key: 'label' }],
-    });
+    const bytes = await writeSheet(
+      path,
+      [
+        [1, 'one'],
+        [2, 'two'],
+      ],
+      {
+        columns: [{ key: 'id' }, { key: 'label' }],
+      },
+    );
     expect(await readAll(path, { header: true })).toEqual([
       { id: 1, label: 'one' },
       { id: 2, label: 'two' },
     ] as never);
-    expect((await (await load(bytes)).getWorksheet(1)!.getRow(1).values)).toEqual([undefined, 'id', 'label']);
+    expect(await (await load(bytes)).getWorksheet(1)!.getRow(1).values).toEqual([undefined, 'id', 'label']);
   });
 
   it('writes mixed object and array rows against the same columns', async () => {
@@ -133,7 +138,10 @@ describe('rows and columns', () => {
 
   it('derives columns from the first object row when none are given', async () => {
     const path = temp('derived.xlsx');
-    await writeSheet(path, [{ b: 1, a: 2 }, { a: 3, b: 4 }]);
+    await writeSheet(path, [
+      { b: 1, a: 2 },
+      { a: 3, b: 4 },
+    ]);
     expect(await readAll(path, { header: true })).toEqual([
       { b: 1, a: 2 },
       { b: 4, a: 3 },
@@ -284,7 +292,15 @@ describe('cell styling', () => {
 describe('layout', () => {
   it('writes explicit column widths', async () => {
     const sheet = await sheetOf(
-      toXlsx([{ rows: [[1, 2]], columns: [{ key: 'a', width: 30 }, { key: 'b', width: 12 }] }]),
+      toXlsx([
+        {
+          rows: [[1, 2]],
+          columns: [
+            { key: 'a', width: 30 },
+            { key: 'b', width: 12 },
+          ],
+        },
+      ]),
     );
     expect(sheet.getColumn(1).width).toBe(30);
     expect(sheet.getColumn(2).width).toBe(12);
@@ -328,9 +344,7 @@ describe('layout', () => {
   });
 
   it('omits the auto-filter when autoFilter is false', async () => {
-    const sheet = await sheetOf(
-      toXlsx([{ rows: [{ a: 1 }], columns: [{ key: 'a' }], autoFilter: false }]),
-    );
+    const sheet = await sheetOf(toXlsx([{ rows: [{ a: 1 }], columns: [{ key: 'a' }], autoFilter: false }]));
     expect(sheet.autoFilter).toBeUndefined();
   });
 

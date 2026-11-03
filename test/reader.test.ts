@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import ExcelJS from 'exceljs';
-import { listSheets, readSheet, readWorkbook, toXlsx } from 'excel-lite';
+import { listSheets, readSheet, readWorkbook } from 'excel-lite';
 import type { CellValue, RowObject } from 'excel-lite';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -32,10 +32,7 @@ describe('cell types', () => {
       sheet.getCell('A2').value = 'shared';
       sheet.getCell('B1').value = 'other';
     });
-    expect(await collect(readSheet(path))).toEqual([
-      ['shared', 'other'],
-      ['shared'],
-    ]);
+    expect(await collect(readSheet(path))).toEqual([['shared', 'other'], ['shared']]);
   });
 
   it('concatenates every run of a rich-text shared string', async () => {

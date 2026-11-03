@@ -34,14 +34,19 @@ async function expectFailure(args: string[]): Promise<Failure> {
 const csvFile = temp('quoting.xlsx');
 writeFileSync(
   csvFile,
-  toXlsx([{ name: 'Csv', rows: [['a,b', 'q"q', 'line\nbreak', 'plain'], [null, '', 1.5]] }]),
+  toXlsx([
+    {
+      name: 'Csv',
+      rows: [
+        ['a,b', 'q"q', 'line\nbreak', 'plain'],
+        [null, '', 1.5],
+      ],
+    },
+  ]),
 );
 
 const bigFile = temp('big.xlsx');
-writeFileSync(
-  bigFile,
-  toXlsx([{ rows: Array.from({ length: 5000 }, (_, index) => [index, `row-${index}`]) }]),
-);
+writeFileSync(bigFile, toXlsx([{ rows: Array.from({ length: 5000 }, (_, index) => [index, `row-${index}`]) }]));
 
 const notXlsx = temp('not.xlsx');
 writeFileSync(notXlsx, 'this is not a spreadsheet');

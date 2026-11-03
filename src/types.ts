@@ -7,7 +7,7 @@ export type RowObject = Record<string, CellValue>;
 export type SheetRow = CellValue[] | RowObject;
 
 /** Anything we can turn into bytes: file path (Node), Buffer, ArrayBuffer, Blob, or a byte stream. */
-export type Source = string | Uint8Array | ArrayBuffer | AsyncIterable<Uint8Array>;
+export type Source = string | Uint8Array | ArrayBuffer | Blob | AsyncIterable<Uint8Array>;
 
 export interface ReadOptions {
   /** Sheet name or 0-based index. Defaults to the first sheet. */
@@ -58,6 +58,3 @@ export interface SheetInput {
 export interface WriteOptions extends Omit<SheetInput, 'rows' | 'name'> {
   name?: string;
 }
-
-/** Decides how many rows/columns a writer should emit for a sheet. */
-export type SheetMatrix = ReadonlyArray<ReadonlyArray<CellValue>>;

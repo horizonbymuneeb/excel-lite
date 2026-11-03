@@ -4,7 +4,7 @@
 Independent check that what we write is a real .xlsx, not just something our
 own reader happens to accept:
 
-    node scripts/write-sample.mjs /tmp/sample.xlsx
+    node -e "const {writeSheet}=await import('./dist/index.js'); await writeSheet('/tmp/sample.xlsx',[{name:'Muneeb',amount:1234.5,when:new Date(Date.UTC(2024,4,17)),active:true}],{columns:[{key:'name'},{key:'amount',format:'#,##0.00'},{key:'when',format:'yyyy-mm-dd'},{key:'active'}]})" --input-type=module
     python3 scripts/verify-with-openpyxl.py /tmp/sample.xlsx
 """
 

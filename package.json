@@ -22,7 +22,11 @@
     "docs",
     "CHANGELOG.md",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "ROADMAP.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "SUPPORT.md"
   ],
   "sideEffects": false,
   "scripts": {
