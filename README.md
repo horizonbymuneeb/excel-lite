@@ -127,10 +127,13 @@ file** so nobody gets a file their own writer shaped.
 
 | | excel-lite | ExcelJS | SheetJS |
 |---|---|---|---|
-| write 50,000 rows | **1.12 s** | 2.74 s | 1.67 s |
-| read 50,000 rows | **466 ms** | 2.19 s | 1.99 s |
-| peak RSS (read) | **96 MB** | 403 MB | 219 MB |
+| write 50,000 rows | **1.15 s** | 2.84 s | 1.69 s |
+| read 50,000 rows | **457 ms** | 2.17 s | 2.04 s |
+| peak RSS (read) | **80 MB** | 388 MB | 221 MB |
 | file size written | **1.54 MB** | 1.51 MB | 11.54 MB |
+
+Read is ~4.7× faster than ExcelJS and ~4.5× faster than SheetJS; peak memory is ~4.8×
+lower than ExcelJS. RSS moves ±15% between runs, times ±5%.
 
 Reproduce it: `npm run bench` (add a row count: `npm run bench -- 200000`).
 
