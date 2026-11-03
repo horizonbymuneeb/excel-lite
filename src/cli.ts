@@ -91,11 +91,6 @@ function objectKeys(row: SheetRow, fallback: string[]): string[] {
   return Object.keys(row);
 }
 
-function rowArray(row: SheetRow, keys: string[]): string[] {
-  if (Array.isArray(row)) return row.map(cellText);
-  return keys.map((key) => cellText(row[key] ?? null));
-}
-
 function ignoreBrokenPipe(stream: NodeJS.WriteStream | Writable): void {
   stream.on('error', (error: NodeJS.ErrnoException) => {
     if (error.code === 'EPIPE') process.exit(0);
@@ -119,7 +114,9 @@ async function main(argv: string[]): Promise<void> {
     const width = Math.max(...sheets.map((sheet) => sheet.name.length), 4);
     process.stdout.write(`${file}\n`);
     for (const sheet of sheets) {
-      process.stdout.write(`  ${String(sheet.index).padStart(2)}  ${sheet.name.padEnd(width)}  ${sheet.rowCount} rows\n`);
+      process.stdout.write(
+        `  ${String(sheet.index).padStart(2)}  ${sheet.name.padEnd(width)}  ${sheet.rowCount} rows\n`,
+      );
     }
     return;
   }

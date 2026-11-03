@@ -19,6 +19,8 @@
   },
   "files": [
     "dist",
+    "docs",
+    "CHANGELOG.md",
     "README.md",
     "LICENSE"
   ],
@@ -28,17 +30,30 @@
     "test": "npm run build && vitest run",
     "bench": "node scripts/bench.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "prepublishOnly": "npm run typecheck && npm test",
-    "fixtures": "python3 scripts/make-fixtures.py"
+    "prepublishOnly": "npm run verify",
+    "fixtures": "python3 scripts/make-fixtures.py",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "coverage": "npm run build && vitest run -c vitest.config.coverage.ts --coverage",
+    "check:links": "node scripts/check-links.mjs",
+    "check:bundle": "node scripts/check-browser-bundle.mjs",
+    "verify": "npm run typecheck && npm run lint && npm test && npm run check:links && npm run check:bundle"
   },
   "dependencies": {
     "fflate": "^0.8.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^3.2.7",
+    "eslint": "^10.14.0",
     "exceljs": "^4.4.0",
+    "prettier": "^3.9.10",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
+    "typescript-eslint": "^8.72.1",
     "vitest": "^3.0.0",
     "xlsx": "^0.18.5"
   },

@@ -1,0 +1,38 @@
+name: Feature request
+description: A workflow you cannot express today
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This library is deliberately small, so the most useful request describes the *workflow*,
+        not the API. Also check [ROADMAP.md](https://github.com/horizonbymuneeb/excel-lite/blob/main/ROADMAP.md)
+        and [docs/recipes.md](https://github.com/horizonbymuneeb/excel-lite/blob/main/docs/recipes.md)
+        first — there may already be a recipe for it.
+  - type: textarea
+    id: workflow
+    attributes:
+      label: What are you trying to build?
+      description: The end goal, the files involved, and where excel-lite stops being enough.
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Current workaround
+      description: How do you do it today (another library, a script, manual work)?
+  - type: textarea
+    id: api
+    attributes:
+      label: API you imagined (optional)
+      render: ts
+  - type: dropdown
+    id: size
+    attributes:
+      label: Do you think this belongs in core?
+      options:
+        - Core — it is part of reading/writing rows
+        - Recipe/docs — it can be built on top of the current API
+        - Separate package
+    validations:
+      required: true

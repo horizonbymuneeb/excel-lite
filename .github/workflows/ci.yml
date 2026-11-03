@@ -5,8 +5,16 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   test:
+    name: node ${{ matrix.node }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -20,10 +28,56 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run lint
       - run: npm test
-      - run: npm pack --dry-run
+      - name: coverage
+        if: matrix.node == 22
+        run: npm run coverage
+      - name: upload coverage
+        if: matrix.node == 22
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
 
-  python-fixtures:
+  package:
+    name: package + browser bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: browser bundle must not contain node builtins
+        run: npm run check:bundle
+      - name: published file list
+        run: |
+          npm pack --dry-run --json > /tmp/pack.json
+          node -e "
+            const files = JSON.parse(require('fs').readFileSync('/tmp/pack.json','utf8'))[0].files.map(f => f.path);
+            const bad = files.filter(f => /^(test|docs?\/.*\.test|node_modules|coverage|\.github)\//.test(f) || /\.(tgz|test\.ts)\$/.test(f));
+            if (bad.length) { console.error('unexpected files in package:', bad); process.exit(1); }
+            for (const required of ['dist/index.js','dist/index.cjs','dist/index.d.ts','README.md','LICENSE'])
+              if (!files.includes(required)) { console.error('missing from package:', required); process.exit(1); }
+            console.log('package contains', files.length, 'files');
+          "
+
+  docs:
+    name: docs links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run check:links
+
+  fixtures:
+    name: fixtures are reproducible
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,4 +86,10 @@ jobs:
           node-version: 22
       - run: pip install openpyxl
       - run: python3 scripts/make-fixtures.py
-      - run: git diff --exit-code --stat fixtures || (echo "fixtures are stale: run scripts/make-fixtures.py" && exit 1)
+      - name: fail when committed fixtures drift from the generator
+        run: |
+          if ! git diff --quiet -- fixtures; then
+            echo "fixtures/ is stale compared to scripts/make-fixtures.py:"
+            git diff --stat -- fixtures
+            exit 1
+          fi

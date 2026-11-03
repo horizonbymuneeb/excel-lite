@@ -36,7 +36,11 @@ function normalizeColor(color: string): string {
 }
 
 function uniqueSheetName(raw: string, used: Set<string>): string {
-  const cleaned = raw.replace(/[\\/?*[\]:]/g, ' ').replace(/\s+/g, ' ').trim() || 'Sheet';
+  const cleaned =
+    raw
+      .replace(/[\\/?*[\]:]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim() || 'Sheet';
   const base = cleaned.slice(0, 31);
   let candidate = base;
   let suffix = 2;
@@ -205,8 +209,8 @@ function displayWidth(value: CellValue): number {
 
 function parseFreeze(freeze: SheetInput['freeze']): { xSplit: number; ySplit: number; topLeft: string } | null {
   if (!freeze) return null;
-  let xSplit = 0;
-  let ySplit = 0;
+  let xSplit: number;
+  let ySplit: number;
   if (typeof freeze === 'string') {
     const match = /^([A-Za-z]+)(\d+)$/.exec(freeze.trim());
     if (!match) throw new Error(`excel-lite: freeze must look like "A2", got "${freeze}"`);
@@ -270,11 +274,7 @@ function cellXml(
   return `<c r="${ref}"${styleAttr} t="s"><v>${index}</v></c>`;
 }
 
-function buildSheetXml(
-  sheet: SheetInput,
-  styles: StyleBook,
-  shared: SharedStrings,
-): string {
+function buildSheetXml(sheet: SheetInput, styles: StyleBook, shared: SharedStrings): string {
   const columns: ColumnSpec[] = sheet.columns ? [...sheet.columns] : [];
   const body: Array<Array<CellValue | undefined>> = [];
 
@@ -292,7 +292,10 @@ function buildSheetXml(
   }
 
   const emitHeader = (sheet.header ?? columns.length > 0) && columns.length > 0;
-  const columnCount = Math.max(columns.length, body.reduce((max, row) => Math.max(max, row.length), 0));
+  const columnCount = Math.max(
+    columns.length,
+    body.reduce((max, row) => Math.max(max, row.length), 0),
+  );
   const widths = new Array<number>(columnCount).fill(0);
   const lines: string[] = [];
   let rowNumber = 0;
@@ -304,9 +307,7 @@ function buildSheetXml(
       const header = column.header ?? column.key;
       widths[index] = Math.max(widths[index], displayWidth(header));
       const styleId = styles.xfId({ bold: true });
-      cells.push(
-        cellXml(header, `${columnLetter(index)}1`, styleId, { ...column, bold: false }, styles, shared),
-      );
+      cells.push(cellXml(header, `${columnLetter(index)}1`, styleId, { ...column, bold: false }, styles, shared));
     });
     lines.push(`<row r="1">${cells.join('')}</row>`);
   }
@@ -433,16 +434,10 @@ function workbookXml(names: string[]): string {
 function workbookRelsXml(sheetCount: number): string {
   const parts: string[] = [];
   for (let index = 1; index <= sheetCount; index++) {
-    parts.push(
-      `<Relationship Id="rId${index}" Type="${DOC_REL}/worksheet" Target="worksheets/sheet${index}.xml"/>`,
-    );
+    parts.push(`<Relationship Id="rId${index}" Type="${DOC_REL}/worksheet" Target="worksheets/sheet${index}.xml"/>`);
   }
-  parts.push(
-    `<Relationship Id="rId${sheetCount + 1}" Type="${DOC_REL}/styles" Target="styles.xml"/>`,
-  );
-  parts.push(
-    `<Relationship Id="rId${sheetCount + 2}" Type="${DOC_REL}/sharedStrings" Target="sharedStrings.xml"/>`,
-  );
+  parts.push(`<Relationship Id="rId${sheetCount + 1}" Type="${DOC_REL}/styles" Target="styles.xml"/>`);
+  parts.push(`<Relationship Id="rId${sheetCount + 2}" Type="${DOC_REL}/sharedStrings" Target="sharedStrings.xml"/>`);
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${RELS_NS}">${parts.join(
     '',
   )}</Relationships>`;
@@ -462,7 +457,19 @@ function sharedStringsXml(shared: SharedStrings): string {
 // public API
 // ---------------------------------------------------------------------------
 
-/** Build a workbook in memory. Works in Node, browsers and workers. */
+/**
+ * Build a workbook in memory and return the `.xlsx` bytes.
+ *
+ * Works in Node, browsers and workers — nothing here touches the filesystem.
+ *
+ * @param sheets One entry per sheet: rows, optional `columns`, `freeze`, `autoFilter`.
+ * @throws If `sheets` is empty, a colour is malformed, or `freeze` is not an A1-style cell.
+ *
+ * @example
+ * ```ts
+ * const bytes = toXlsx([{ rows: [{ id: 1, name: 'Ada' }], columns: [{ key: 'id' }, { key: 'name' }] }]);
+ * ```
+ */
 export function toXlsx(sheets: SheetInput[]): Uint8Array {
   if (!Array.isArray(sheets) || sheets.length === 0) {
     throw new Error('excel-lite: toXlsx needs at least one sheet');
@@ -491,14 +498,34 @@ export function toXlsx(sheets: SheetInput[]): Uint8Array {
   return zipFiles(files);
 }
 
-/** Write a workbook to a file path (Node) and return the bytes. */
+/**
+ * Write a workbook to a file path (Node 22+) and return the bytes that were written.
+ *
+ * @example
+ * ```ts
+ * await writeWorkbook('book.xlsx', [
+ *   { name: 'Report', rows, columns: [{ key: 'amount', format: '#,##0.00' }] },
+ *   { name: 'Raw', rows: [[1, 2, 3]] },
+ * ]);
+ * ```
+ */
 export async function writeWorkbook(destination: string, sheets: SheetInput[]): Promise<Uint8Array> {
   const bytes = toXlsx(sheets);
   await writeFileBytes(destination, bytes);
   return bytes;
 }
 
-/** One-sheet convenience: `writeSheet('report.xlsx', rows, { columns })`. */
+/**
+ * One-sheet convenience wrapper around {@link writeWorkbook}.
+ *
+ * @example
+ * ```ts
+ * await writeSheet('report.xlsx', rows, {
+ *   columns: [{ key: 'email', width: 32 }, { key: 'joined', format: 'yyyy-mm-dd' }],
+ *   freeze: 'A2',
+ * });
+ * ```
+ */
 export async function writeSheet(
   destination: string,
   rows: Iterable<RowInput>,

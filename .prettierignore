@@ -1,0 +1,7 @@
+dist/
+node_modules/
+fixtures/
+package-lock.json
+README.md
+docs/
+CHANGELOG.md

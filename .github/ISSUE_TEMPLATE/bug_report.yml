@@ -1,0 +1,69 @@
+name: Bug report
+description: Something reads or writes incorrectly, throws, or fails to run
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read [docs/troubleshooting.md](https://github.com/horizonbymuneeb/excel-lite/blob/main/docs/troubleshooting.md)
+        first — it covers the most common failures (not a zip, sheet not found, dates shifted,
+        memory pressure, bundler warnings).
+
+        Security issues: do **not** file them here. See
+        [SECURITY.md](https://github.com/horizonbymuneeb/excel-lite/blob/main/SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: excel-lite version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and OS
+      placeholder: Node 22.11 / Ubuntu 24.04, or Chrome 130 via Vite 6
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - reading (readSheet / readWorkbook / listSheets)
+        - writing (writeSheet / writeWorkbook / toXlsx)
+        - CLI
+        - types / packaging (ESM, CJS, d.ts)
+        - browser bundle
+        - docs
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproducer
+      description: Code that runs, plus (if possible) a small .xlsx or a script that generates it.
+      render: ts
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+      description: Include the exact error message and stack trace if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: file-origin
+    attributes:
+      label: Where did the file come from?
+      description: Excel, LibreOffice, Google Sheets, openpyxl, ExcelJS, SheetJS, a customer export… This tells us which producer quirks to look for.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues
+          required: true
+        - label: I can reproduce this on the latest release
+          required: true

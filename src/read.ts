@@ -26,8 +26,8 @@ const EXCEL_EPOCH_1904 = Date.UTC(1904, 0, 1);
  * locale variants in 27–36 / 50–58 render as dates or times.
  */
 const BUILTIN_DATE_FORMATS = new Set([
-  14, 15, 16, 17, 18, 19, 20, 21, 22, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 45, 46, 47, 50, 51, 52,
-  53, 54, 55, 56, 57, 58,
+  14, 15, 16, 17, 18, 19, 20, 21, 22, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56,
+  57, 58,
 ]);
 
 // ---------------------------------------------------------------------------
@@ -217,8 +217,7 @@ export class WorkbookReader {
       const name = sheet.attrs.name ?? `Sheet${index + 1}`;
       const relationshipId = sheet.attrs.id; // r:id, prefix stripped by the parser
       const part =
-        (relationshipId ? relTargets.get(relationshipId) : undefined) ??
-        `xl/worksheets/sheet${index + 1}.xml`;
+        (relationshipId ? relTargets.get(relationshipId) : undefined) ?? `xl/worksheets/sheet${index + 1}.xml`;
       return { name, part };
     });
 
@@ -364,14 +363,28 @@ export class WorkbookReader {
 // public API
 // ---------------------------------------------------------------------------
 
-export function readSheet(
-  source: Source,
-  options: ReadOptions & { header: true },
-): AsyncGenerator<RowObject>;
-export function readSheet(
-  source: Source,
-  options?: ReadOptions & { header?: false },
-): AsyncGenerator<CellValue[]>;
+/**
+ * Read one sheet as an async iterable of rows.
+ *
+ * Rows are parsed lazily as you iterate, so a consumer that stops early stops the work.
+ * The sheet XML itself is decompressed into memory first (see `docs/performance.md`).
+ *
+ * @param source A file path (Node 22+), `Uint8Array`/`Buffer`, `ArrayBuffer`, `Blob`, or an
+ *   async iterable of byte chunks.
+ * @param options `sheet` picks by name or 0-based index (default: the first sheet);
+ *   `header: true` turns the first non-empty row into object keys.
+ * @returns Rows as `CellValue[]`, or `RowObject`s when `header` is true.
+ * @throws If the file is not a zip, `xl/workbook.xml` is missing, or the sheet does not exist.
+ *
+ * @example
+ * ```ts
+ * for await (const row of readSheet('report.xlsx', { header: true })) {
+ *   console.log(row.email, row.amount);
+ * }
+ * ```
+ */
+export function readSheet(source: Source, options: ReadOptions & { header: true }): AsyncGenerator<RowObject>;
+export function readSheet(source: Source, options?: ReadOptions & { header?: false }): AsyncGenerator<CellValue[]>;
 export function readSheet(source: Source, options?: ReadOptions): AsyncGenerator<SheetRow>;
 export async function* readSheet(source: Source, options: ReadOptions = {}): AsyncGenerator<SheetRow> {
   const reader = await WorkbookReader.open(source);
@@ -379,6 +392,7 @@ export async function* readSheet(source: Source, options: ReadOptions = {}): Asy
   yield* reader.rows(index, Boolean(options.header)) as Generator<SheetRow>;
 }
 
+/** A workbook opened once so several sheets can be iterated without re-reading the file. */
 export interface Workbook {
   sheetNames: string[];
   /** Iterate one sheet, picked by name or index (default: the first). */
@@ -387,11 +401,22 @@ export interface Workbook {
     options?: { header?: T },
   ): AsyncGenerator<T extends true ? RowObject : CellValue[]>;
   /** Stack of every sheet in order. */
-  sheets<T extends boolean = false>(
-    options?: { header?: T },
-  ): AsyncGenerator<T extends true ? RowObject : CellValue[]>[];
+  sheets<T extends boolean = false>(options?: {
+    header?: T;
+  }): AsyncGenerator<T extends true ? RowObject : CellValue[]>[];
 }
 
+/**
+ * Open a workbook and iterate its sheets by name or index.
+ *
+ * The file is read once; each `sheet()` call re-parses the requested sheet on demand.
+ *
+ * @example
+ * ```ts
+ * const workbook = await readWorkbook('report.xlsx');
+ * for await (const row of workbook.sheet('Data', { header: true })) console.log(row);
+ * ```
+ */
 export async function readWorkbook(source: Source): Promise<Workbook> {
   const reader = await WorkbookReader.open(source);
   const stream = (index: number, header: boolean): AsyncGenerator<SheetRow> =>
@@ -412,7 +437,16 @@ export async function readWorkbook(source: Source): Promise<Workbook> {
   return workbook as unknown as Workbook;
 }
 
-/** Sheet names plus row counts, without materialising cell values. */
+/**
+ * Sheet names plus row counts, without materialising cell values.
+ *
+ * Row counts come from counting `<row>` elements, so this stays cheap even on large files.
+ *
+ * @example
+ * ```ts
+ * console.log(await listSheets('report.xlsx')); // [{ name: 'Data', index: 0, rowCount: 50001 }]
+ * ```
+ */
 export async function listSheets(source: Source): Promise<SheetInfo[]> {
   const reader = await WorkbookReader.open(source);
   return reader.sheetNames.map((name, index) => ({
